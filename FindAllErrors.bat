@@ -1,14 +1,10 @@
 @echo off
 setlocal enabledelayedexpansion
-
-set /p "=Establishing connection" <nul
-for /L %%i in (1,1,60) do (
-    set /p "=." <nul
-    ping localhost -n 1 >nul
-)
-echo.
-
-:: Check if we are in the cyberpunk directory or if the cyberpunk directory was dragged onto the script. Mostly stolen from Mana
+:: AUTHOR: https://github.com/DoctorPresto
+:: FIXED & UPDATED BY ME: https://github.com/MWTBDLTR - MrChurch
+:: I have only updated some sections that weren't working correctly and updated the exe version check for 2.02
+:START
+:: Check if we are in the Cyberpunk directory or if the Cyberpunk directory was dragged onto the script. Mostly stolen from Mana
 if "%~1" == "" (
   pushd "%~dp0"
   set "CYBERPUNKDIR=!CD!"
@@ -17,9 +13,9 @@ if "%~1" == "" (
   set "CYBERPUNKDIR=%~1"
 )
 
-:: Check if the script folder is set to read-only
+:: Check for read-only
 pushd %~dp0
-if %errorlevel% neq 0 (
+if not %errorlevel%==0 (
     echo ERROR: The script folder is set to read-only.
     echo Please ensure write permissions are available and try again.
     popd
@@ -28,16 +24,14 @@ if %errorlevel% neq 0 (
 )
 popd
 
-echo.
-
-::if not, deploy R.A.B.I.D.S and shut down
+::Wrong directory m8
 if not exist "%CYBERPUNKDIR%\bin\x64\Cyberpunk2077.exe" (
   echo.
-  echo Wake the f*ck up Samurai! This isn't your Cyberpunk install directory
-  echo Either place me in your Cyberpunk 2077 folder and try again
+  echo This is NOT your Cyberpunk directory
+  echo Place me in your Cyberpunk 2077 folder and try again
   echo or drag and drop it onto me from Windows Explorer
   echo.
-  echo Deploying Roving Autonomous Bartmoss Interface Drones....
+  echo Deploying BetterThanBartmoss Sniffer Drones...
   FOR /L %%S IN (10, -1, 1) DO (
     set /p =%%S ...!carret!<nul
     ping -n 2 127.0.0.1 > nul 2>&1
@@ -45,76 +39,62 @@ if not exist "%CYBERPUNKDIR%\bin\x64\Cyberpunk2077.exe" (
   goto :eof
 )
 
-echo.
 echo Please select an option:
 echo.
-echo 1. Delete all log files and launch the game (wait for your game to crash and then run option 2)
+echo 1. Delete all current log files (so that you may populate new log files with new errors)
 echo.
-echo 2. Check for errors
+echo 2. Check for errors (use this option after your game crashes)
 echo.
 
 set /p userOption=Enter your choice: 
 if "%userOption%"=="1" (
-	echo.
+    echo.
     echo Deleting all log files...
     for /R "%~dp0" %%G in (*.log) do (
         del /F /Q "%%G"
     )
-	echo.
+    echo.
     echo All log files deleted successfully.
-    echo Starting Cyberpunk 2077...
-    start "" "%CYBERPUNKDIR%\bin\x64\Cyberpunk2077.exe"
     goto :eof
 ) else if "%userOption%"=="2" (
-    echo Deploying Datamine
+    echo.
+    echo Deploying BetterThanBartmoss Protocols
 ) else (
-    echo Invalid option, please enter 1 or 2.
+    CLS
     goto START
 )
 
-::if not, deploy R.A.B.I.D.S and shut down
-if not exist "%CYBERPUNKDIR%\bin\x64\Cyberpunk2077.exe" (
-  echo.
-  echo Wake the f*ck up Samurai! This isn't your Cyberpunk install directory
-  echo Either place me in your Cyberpunk 2077 folder and try again
-  echo or drag and drop it onto me from Windows Explorer
-  echo.
-  echo Deploying Roving Autonomous Bartmoss Interface Drones....
-  FOR /L %%S IN (10, -1, 1) DO (
-    set /p =%%S ...!carret!<nul
-    ping -n 2 127.0.0.1 > nul 2>&1
-  )
-  goto :eof
-)
-:: Check if the LOGS folder already exists in the install directory, if not, create it
+:: Check if the _LOGS folder already exists in the directory, if not, then create it
 if not exist "%CYBERPUNKDIR%\_LOGS" mkdir "%CYBERPUNKDIR%\_LOGS"
 
-:: Set the output file path for the FilteredLogs file
+:: Set the output file path for the "FilteredLogs" file
 set "output_file=%CYBERPUNKDIR%\_LOGS\FilteredLogs.txt"
 
-:: if there's already a FilteredLogs.txt file, clear the content so that all of the errors listed were recorded on this run this run
+:: If there's already a "FilteredLogs" file, clear the content so that all of the errors listed were recorded on this run
 break > "%output_file%"
 
-:: Set the path to the cyberpunk exe 
+:: Set path to the game exe
 set "exe_path=%CYBERPUNKDIR%\bin\x64\Cyberpunk2077.exe"
-:: Get exe version using wmic datafile command because it works
+
+:: Get .exe version using wmic datafile command
 for /f "tokens=2 delims==" %%a in ('wmic datafile where name^="!exe_path:\=\\!" get version /value') do (
     for /f "delims=" %%b in ("%%a") do set "version=%%b"
 )      
 
-:: if not the current game version, yell at the user and deploy R.A.B.I.D.S.
-if not "!version!"=="3.0.72.54038" (
-  echo Please update the game before proceeding
-  echo Deploying Roving Autonomous Bartmoss Interface Drones....
-  FOR /L %%S IN (10, -1, 1) DO (
-    set /p =%%S ...!carret!<nul
-    ping -n 2 127.0.0.1 > nul 2>&1
-  )
-  goto :eof
+:: If not the current game version
+if not "!version!"=="3.0.75.25522" (
+    echo.
+    echo Please update the game before proceeding
+    echo.
+    FOR /L %%S IN (10, -1, 1) DO (
+        set /p =%%S ...!carret!<nul
+        ping -n 2 127.0.0.1 > nul 2>&1
+    )
+    goto :eof
 )
 
 :: Append version info to the output file
-echo Version: !version! > "%output_file%"
+echo Cyberpunk2077 EXE Version: !version! > "%output_file%"
 
 :: get CET Version from the log file 
 set "cet_log=%CYBERPUNKDIR%\bin\x64\plugins\cyber_engine_tweaks\cyber_engine_tweaks.log"
@@ -122,13 +102,11 @@ set "cet_version="
 set "cet_found="
 
 if exist "%cet_log%" (
-    for /f "delims=" %%a in ('findstr /I /C:"CET version" "%cet_log%"') do (
-        set "cet_version_line=%%a"
-    )
-    :: Trim the version from the line
-    for /f "tokens=12 delims= " %%a in ("!cet_version_line!") do (
-        set "cet_version=%%~a"
+    for /f "tokens=9 delims= " %%a in ('findstr /I /C:"CET version " "%cet_log%"') do (
+        set "cet_version=%%a"
         set "cet_found=1"
+        :: Strip the 'v' from the beginning of the version string
+        set "cet_version=!cet_version:v=!"
     )
 )
 
@@ -164,7 +142,7 @@ for %%D in (%dll_files%) do (
     )
 )
 
-:: if any core mod dlls or CET are not found, display an alert and write to the output file
+:: If any core mod dlls or CET is/are not found, display to the output file
 if defined dll_not_found (
     echo The following framework mods are not installed: %dll_not_found% >> "%output_file%"
 )
@@ -174,11 +152,10 @@ if defined cet_found (
     echo CET Version: !cet_version! >> "%output_file%"
 )
 
-
 :: Parse through all files ending with .log, excluding those with .number.log pattern
 echo. >> "%output_file%" 
 echo ======================================================== >> "%output_file%"
-echo Successfully Breached: %cyberpunkdir% >> "%output_file%"
+echo Directory Scanned: %cyberpunkdir% >> "%output_file%"
 echo The following log files have errors: >> "%output_file%"
 echo ======================================================== >> "%output_file%"
 
@@ -187,19 +164,19 @@ for /R "%CYBERPUNKDIR%" %%F in (*.log) do (
     setlocal enabledelayedexpansion
     set "exclude=false"
 
-    REM Check if the file name contains two dots
+    :: Check if the file name contains two dots
     echo "!filename!" | findstr /R /C:".*\..*\.." >nul
     if !errorlevel! equ 0 (
         set "exclude=true"
     )
 
-    REM Process non-excluded log files
+    :: Process non-excluded log files
     if "!exclude!"=="false" (
         :: Initialize error flag to false
         set "has_error=false"
         
         :: Check for any errors in the file. If found, set error flag to true
-        for /F "delims=" %%L in ('findstr /I "exception error failed" "%%F" ^| findstr /V /I /C:"Failed to create record" ^| findstr /V /I /C:"reason: Record already exists" ^| findstr /V /I /C:"[Info]"') do (
+        for /F "delims=" %%L in ('findstr /I "exception error failed" "%%F" ^| findstr /V /I /C:"Failed to create record" ^| findstr /I "error" ^| findstr /V /I /C:"reason: Record already exists" ^| findstr /V /I /C:"[Info]"') do (
             set "has_error=true"
         )
         
@@ -211,9 +188,9 @@ for /R "%CYBERPUNKDIR%" %%F in (*.log) do (
             echo !relative_path:~1!%%~nxF >> "%output_file%"
             echo. >> "%output_file%"
 
-            for /F "delims=" %%L in ('findstr /I "exception error failed" "%%F" ^| findstr /V /I /C:"Failed to create record" ^| findstr /V /I /C:"reason: Record already exists" ^| findstr /V /I /C:"[Info]"') do (
+            for /F "delims=" %%L in ('findstr /I "exception error failed" "%%F" ^| findstr /V /I /C:"Failed to create record" ^| findstr /I "error" ^| findstr /V /I /C:"reason: Record already exists" ^| findstr /V /I /C:"[Info]"') do (
                 echo     %%L >> "%output_file%"
-                echo Daemons uploaded successfully, data found
+                echo SnifferDrones deployed successfully, error data was found
             )
         )
     )
