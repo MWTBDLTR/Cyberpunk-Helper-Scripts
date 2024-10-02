@@ -2,7 +2,7 @@
 setlocal enabledelayedexpansion
 :: AUTHOR: https://github.com/DoctorPresto
 :: FIXED & UPDATED BY ME: https://github.com/MWTBDLTR - MrChurch
-:: I have only updated some sections that weren't working correctly and updated the exe version check for 2.02
+:: I have fixed some sections that weren't working correctly and updated the exe version check for 2.13
 :START
 :: Check if we are in the Cyberpunk directory or if the Cyberpunk directory was dragged onto the script. Mostly stolen from Mana
 if "%~1" == "" (
@@ -82,7 +82,7 @@ for /f "tokens=2 delims==" %%a in ('wmic datafile where name^="!exe_path:\=\\!" 
 )      
 
 :: If not the current game version
-if not "!version!"=="3.0.75.25522" (
+if not "!version!"=="3.0.77.64623" (
     echo.
     echo Please update the game before proceeding
     echo.
